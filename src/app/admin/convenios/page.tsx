@@ -1,16 +1,25 @@
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { convenios, categories, convenioImages } from '@/lib/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, or } from 'drizzle-orm';
 import DeleteButton from './DeleteButton';
+import ApproveButton from './ApproveButton';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ConveniosPage() {
+export default async function ConveniosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab } = await searchParams;
+  const isPending = tab === 'pending';
+
   const rows = await db
     .select({ convenio: convenios, category: categories })
     .from(convenios)
     .leftJoin(categories, eq(convenios.categoryId, categories.id))
+    .where(isPending ? eq(convenios.status, 'pending') : or(eq(convenios.status, 'active'), eq(convenios.status, 'inactive')))
     .orderBy(desc(convenios.createdAt));
 
   const ids = rows.map((r) => r.convenio.id);
@@ -34,13 +43,31 @@ export default async function ConveniosPage() {
         </Link>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6">
+        <Link
+          href="/admin/convenios"
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${!isPending ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+        >
+          Activos / Inactivos
+        </Link>
+        <Link
+          href="/admin/convenios?tab=pending"
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${isPending ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+        >
+          ⏳ Propuestas pendientes
+        </Link>
+      </div>
+
       {list.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p className="text-4xl mb-3">🏷️</p>
-          <p className="font-medium">No hay convenios aún</p>
-          <Link href="/admin/convenios/nuevo" className="text-blue-600 text-sm mt-2 inline-block hover:underline">
-            Crear el primero
-          </Link>
+          <p className="text-4xl mb-3">{isPending ? '⏳' : '🏷️'}</p>
+          <p className="font-medium">{isPending ? 'No hay propuestas pendientes' : 'No hay convenios aún'}</p>
+          {!isPending && (
+            <Link href="/admin/convenios/nuevo" className="text-blue-600 text-sm mt-2 inline-block hover:underline">
+              Crear el primero
+            </Link>
+          )}
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -49,7 +76,8 @@ export default async function ConveniosPage() {
               <tr>
                 <th className="text-left px-4 py-3 text-gray-500 font-semibold">Convenio</th>
                 <th className="text-left px-4 py-3 text-gray-500 font-semibold">Categoría</th>
-                <th className="text-left px-4 py-3 text-gray-500 font-semibold">Estado</th>
+                {isPending && <th className="text-left px-4 py-3 text-gray-500 font-semibold">Propuesto por</th>}
+                {!isPending && <th className="text-left px-4 py-3 text-gray-500 font-semibold">Estado</th>}
                 <th className="text-left px-4 py-3 text-gray-500 font-semibold">Vistas</th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -76,18 +104,25 @@ export default async function ConveniosPage() {
                   <td className="px-4 py-3 text-gray-500">
                     {c.category ? `${c.category.icon} ${c.category.name}` : '—'}
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c.active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {c.active ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </td>
+                  {isPending && (
+                    <td className="px-4 py-3 text-gray-500 text-xs">
+                      {c.proposerName && <div className="font-medium text-gray-700">{c.proposerName}</div>}
+                      {c.proposerEmail && <div>{c.proposerEmail}</div>}
+                      {!c.proposerName && !c.proposerEmail && <span className="italic">Anónimo</span>}
+                    </td>
+                  )}
+                  {!isPending && (
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c.active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {c.active ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                  )}
                   <td className="px-4 py-3 text-gray-500">{c.views}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2 justify-end">
-                      <Link
-                        href={`/admin/convenios/${c.id}/editar`}
-                        className="text-xs font-medium text-blue-600 hover:underline"
-                      >
+                      {isPending && <ApproveButton id={c.id} />}
+                      <Link href={`/admin/convenios/${c.id}/editar`} className="text-xs font-medium text-blue-600 hover:underline">
                         Editar
                       </Link>
                       <DeleteButton id={c.id} />

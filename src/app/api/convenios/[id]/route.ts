@@ -34,24 +34,27 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const body = await req.json();
   const {
     title, description, discountText, startDate, endDate,
-    periods, physicalAddress, webUrl, categoryId, active, images,
+    periods, physicalAddress, webUrl, categoryId, active, images, status,
   } = body;
+
+  // Build partial update — only set fields that were sent
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const updates: Record<string, any> = { updatedAt: new Date() };
+  if (title !== undefined) updates.title = title;
+  if (description !== undefined) updates.description = description;
+  if (discountText !== undefined) updates.discountText = discountText;
+  if (startDate !== undefined) updates.startDate = startDate || null;
+  if (endDate !== undefined) updates.endDate = endDate || null;
+  if (periods !== undefined) updates.periods = periods;
+  if (physicalAddress !== undefined) updates.physicalAddress = physicalAddress;
+  if (webUrl !== undefined) updates.webUrl = webUrl;
+  if (categoryId !== undefined) updates.categoryId = categoryId || null;
+  if (active !== undefined) updates.active = active;
+  if (status !== undefined) updates.status = status;
 
   const [conv] = await db
     .update(convenios)
-    .set({
-      title,
-      description,
-      discountText,
-      startDate: startDate || null,
-      endDate: endDate || null,
-      periods: periods || [],
-      physicalAddress,
-      webUrl,
-      categoryId: categoryId || null,
-      active: active ?? true,
-      updatedAt: new Date(),
-    })
+    .set(updates)
     .where(eq(convenios.id, Number(id)))
     .returning();
 

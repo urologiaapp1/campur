@@ -30,6 +30,9 @@ export const convenios = pgTable('convenios', {
   categoryId: integer('category_id').references(() => categories.id, { onDelete: 'set null' }),
   views: integer('views').notNull().default(0),
   active: boolean('active').notNull().default(true),
+  status: varchar('status', { length: 20 }).notNull().default('active'),
+  proposerName: varchar('proposer_name', { length: 100 }),
+  proposerEmail: varchar('proposer_email', { length: 200 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
