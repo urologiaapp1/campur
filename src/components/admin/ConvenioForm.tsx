@@ -23,6 +23,7 @@ export default function ConvenioForm({ categories, initial }: Props) {
   const [periods, setPeriods] = useState<string[]>((initial?.periods as string[]) ?? []);
   const [physicalAddress, setPhysicalAddress] = useState(initial?.physicalAddress ?? '');
   const [webUrl, setWebUrl] = useState(initial?.webUrl ?? '');
+  const [instagram, setInstagram] = useState(initial?.instagram ?? '');
   const [categoryId, setCategoryId] = useState(initial?.categoryId?.toString() ?? '');
   const [active, setActive] = useState(initial?.active ?? true);
   const [images, setImages] = useState<string[]>(initial?.images.map((i) => i.url) ?? []);
@@ -68,7 +69,7 @@ export default function ConvenioForm({ categories, initial }: Props) {
     try {
       const body = {
         title, description, discountText, startDate, endDate,
-        periods, physicalAddress, webUrl,
+        periods, physicalAddress, webUrl, instagram,
         categoryId: categoryId ? Number(categoryId) : null,
         active, images,
       };
@@ -209,6 +210,18 @@ export default function ConvenioForm({ categories, initial }: Props) {
           type="url"
           className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
         />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+        <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+          <span className="px-3 text-gray-400 text-sm">@</span>
+          <input
+            value={instagram}
+            onChange={(e) => setInstagram(e.target.value.replace('@', ''))}
+            placeholder="nombre_de_usuario"
+            className="flex-1 py-2.5 pr-3 text-sm bg-transparent focus:outline-none"
+          />
+        </div>
       </div>
 
       {/* Imágenes */}

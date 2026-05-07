@@ -108,6 +108,7 @@ export default async function ConveniosPage({
                     <td className="px-4 py-3 text-gray-500 text-xs">
                       {c.proposerName && <div className="font-medium text-gray-700">{c.proposerName}</div>}
                       {c.proposerEmail && <div>{c.proposerEmail}</div>}
+                      {c.proposerPhone && <div>{c.proposerPhone}</div>}
                       {!c.proposerName && !c.proposerEmail && <span className="italic">Anónimo</span>}
                     </td>
                   )}

@@ -135,13 +135,25 @@ export default async function ConvenioPage({ params }: { params: Promise<{ id: s
                   <span className="text-xl mt-0.5">🌐</span>
                   <div>
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Sitio web</p>
+                    <a href={convenio.webUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
+                      {convenio.webUrl}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {convenio.instagram && (
+                <div className="flex items-start gap-3">
+                  <span className="text-xl mt-0.5">📸</span>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Instagram</p>
                     <a
-                      href={convenio.webUrl}
+                      href={`https://instagram.com/${convenio.instagram.replace('@', '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline break-all"
+                      className="text-blue-600 hover:underline"
                     >
-                      {convenio.webUrl}
+                      @{convenio.instagram.replace('@', '')}
                     </a>
                   </div>
                 </div>
