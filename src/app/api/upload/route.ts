@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(req: NextRequest) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return NextResponse.json({ error: 'Almacenamiento de imágenes no configurado' }, { status: 503 });
-  }
-
   const form = await req.formData();
   const file = form.get('file') as File | null;
 
@@ -13,9 +15,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No se recibió archivo' }, { status: 400 });
   }
 
-  const blob = await put(`convenios/${Date.now()}-${file.name}`, file, {
-    access: 'public',
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      { folder: 'campur', resource_type: 'image' },
+      (error, result) => {
+        if (error || !result) reject(error);
+        else resolve(result as { secure_url: string });
+      }
+    ).end(buffer);
   });
 
-  return NextResponse.json({ url: blob.url });
+  return NextResponse.json({ url: result.secure_url });
 }
