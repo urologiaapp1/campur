@@ -3,16 +3,25 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
+const DAYS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+
 interface Category { id: number; name: string; icon: string; }
+
+function isUrl(s: string) { return s.startsWith('http'); }
 
 export default function ProponerPage() {
   const [cats, setCats] = useState<Category[]>([]);
   const [title, setTitle] = useState('');
+  const [discountText, setDiscountText] = useState('');
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [periods, setPeriods] = useState<string[]>([]);
   const [physicalAddress, setPhysicalAddress] = useState('');
   const [webUrl, setWebUrl] = useState('');
   const [instagram, setInstagram] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
   const [proposerName, setProposerName] = useState('');
   const [proposerEmail, setProposerEmail] = useState('');
   const [proposerPhone, setProposerPhone] = useState('');
@@ -26,6 +35,10 @@ export default function ProponerPage() {
   useEffect(() => {
     fetch('/api/categorias').then(r => r.json()).then(setCats);
   }, []);
+
+  function toggleDay(day: string) {
+    setPeriods(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
+  }
 
   async function uploadFile(file: File) {
     setUploading(true);
@@ -54,11 +67,16 @@ export default function ProponerPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
+          discountText: discountText || null,
           description: description || null,
           categoryId: categoryId ? Number(categoryId) : null,
+          startDate: startDate || null,
+          endDate: endDate || null,
+          periods,
           physicalAddress: physicalAddress || null,
           webUrl: webUrl || null,
           instagram: instagram || null,
+          contactPhone: contactPhone || null,
           proposerName,
           proposerEmail,
           proposerPhone,
@@ -81,7 +99,7 @@ export default function ProponerPage() {
       <header className="bg-blue-600 text-white">
         <div className="max-w-3xl mx-auto px-4 py-5 flex items-center gap-3">
           <Link href="/">
-            <Image src="/logo.png" alt="Campur" width={44} height={44} className="rounded-full border-2 border-white/30" />
+            <Image src="/logo.png" alt="Beneficios Club Pumahue" width={44} height={44} className="rounded-full border-2 border-white/30" />
           </Link>
           <div>
             <h1 className="text-xl font-bold">Proponer un convenio</h1>
@@ -104,27 +122,73 @@ export default function ProponerPage() {
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
             {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">{error}</div>}
 
+            {/* Nombre empresa */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del convenio / empresa *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre empresa *</label>
               <input value={title} onChange={e => setTitle(e.target.value)} required
-                placeholder="Ej: 20% de descuento en Farmacia Cruz Verde"
+                placeholder="Ej: Farmacia Cruz Verde"
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
             </div>
 
+            {/* Porcentaje de descuento */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción del descuento</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Porcentaje de descuento</label>
+              <input value={discountText} onChange={e => setDiscountText(e.target.value)}
+                placeholder="Ej: 20% dcto, 2x1, $500 off"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
+            </div>
+
+            {/* Descripción */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Describir descuento ofrecido</label>
               <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
                 placeholder="Describe el descuento, condiciones, qué incluye..."
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 resize-none" />
             </div>
 
+            {/* Categoría */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
               <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
                 <option value="">Seleccionar categoría...</option>
-                {cats.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+                {cats.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {isUrl(c.icon) ? '' : c.icon + ' '}{c.name}
+                  </option>
+                ))}
               </select>
+            </div>
+
+            {/* Fechas */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
+                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de término</label>
+                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
+              </div>
+            </div>
+
+            {/* Días válidos */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Días válidos</label>
+              <div className="flex flex-wrap gap-2">
+                {DAYS.map(day => (
+                  <button key={day} type="button" onClick={() => toggleDay(day)}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium capitalize transition-colors ${
+                      periods.includes(day)
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}>
+                    {day}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Imagen */}
@@ -150,31 +214,43 @@ export default function ProponerPage() {
                 onChange={e => { const f = e.target.files?.[0]; if (f) uploadFile(f); e.target.value = ''; }} />
             </div>
 
+            {/* Dirección */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Dirección física (si aplica)</label>
+              <input value={physicalAddress} onChange={e => setPhysicalAddress(e.target.value)}
+                placeholder="Ej: Av. Alemania 123, Temuco"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
+            </div>
+
+            {/* Web + Instagram + Teléfono */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Dirección física</label>
-                <input value={physicalAddress} onChange={e => setPhysicalAddress(e.target.value)}
-                  placeholder="Ej: Av. Alemania 123, Temuco"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
-              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sitio web</label>
                 <input value={webUrl} onChange={e => setWebUrl(e.target.value)} type="url"
                   placeholder="https://..."
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+                <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                  <span className="px-3 text-gray-400 text-sm">@</span>
+                  <input value={instagram} onChange={e => setInstagram(e.target.value.replace('@', ''))}
+                    placeholder="nombre_usuario"
+                    className="flex-1 py-2.5 pr-3 text-sm bg-transparent focus:outline-none" />
+                </div>
+              </div>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono / WhatsApp empresa</label>
               <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
-                <span className="px-3 text-gray-400 text-sm">@</span>
-                <input value={instagram} onChange={e => setInstagram(e.target.value.replace('@', ''))}
-                  placeholder="nombre_de_usuario"
+                <span className="px-3 text-gray-400 text-sm">📞</span>
+                <input value={contactPhone} onChange={e => setContactPhone(e.target.value)}
+                  placeholder="+56 9 1234 5678"
                   className="flex-1 py-2.5 pr-3 text-sm bg-transparent focus:outline-none" />
               </div>
             </div>
 
+            {/* Datos de contacto */}
             <div className="border-t border-gray-100 pt-4">
               <p className="text-sm font-semibold text-gray-800 mb-3">Tus datos de contacto *</p>
               <div className="space-y-3">
