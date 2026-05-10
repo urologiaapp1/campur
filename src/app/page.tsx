@@ -61,12 +61,12 @@ export default async function HomePage({
               <Image src="/logo.png" alt="Campur" width={52} height={52} className="rounded-full border-2 border-white/30" />
               <div>
                 <h1 className="text-xl font-bold tracking-tight leading-tight">Beneficios Club Pumahue</h1>
-                <p className="text-blue-100 text-xs mt-0.5">Campur General de Padres · Temuco</p>
+                <p className="text-blue-100 text-xs mt-0.5">Centro General de Padres Colegio Pumahue Temuco</p>
               </div>
             </div>
             <Link
               href="/proponer"
-              className="flex items-center gap-2 bg-white text-blue-600 font-bold text-sm px-4 py-2 rounded-full hover:bg-blue-50 transition-colors shadow-sm"
+              className="flex items-center justify-center gap-2 bg-white text-blue-600 font-bold text-sm px-4 py-2 rounded-full hover:bg-blue-50 transition-colors shadow-sm text-center"
             >
               ✉️ Proponer convenio
             </Link>
