@@ -4,7 +4,7 @@ export const categories = pgTable('categories', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),
   slug: varchar('slug', { length: 100 }).notNull().unique(),
-  icon: varchar('icon', { length: 10 }).notNull().default('🏷️'),
+  icon: text('icon').notNull().default('🏷️'),       // emoji or image URL
   color: varchar('color', { length: 30 }).notNull().default('#2563eb'),
   displayOrder: integer('display_order').notNull().default(0),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -29,6 +29,7 @@ export const convenios = pgTable('convenios', {
   webUrl: text('web_url'),
   instagram: varchar('instagram', { length: 200 }),
   categoryId: integer('category_id').references(() => categories.id, { onDelete: 'set null' }),
+  categoryIds: jsonb('category_ids').$type<number[]>().default([]),   // up to 3 categories
   views: integer('views').notNull().default(0),
   active: boolean('active').notNull().default(true),
   status: varchar('status', { length: 20 }).notNull().default('active'),

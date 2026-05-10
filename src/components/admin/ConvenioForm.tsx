@@ -24,7 +24,12 @@ export default function ConvenioForm({ categories, initial }: Props) {
   const [physicalAddress, setPhysicalAddress] = useState(initial?.physicalAddress ?? '');
   const [webUrl, setWebUrl] = useState(initial?.webUrl ?? '');
   const [instagram, setInstagram] = useState(initial?.instagram ?? '');
-  const [categoryId, setCategoryId] = useState(initial?.categoryId?.toString() ?? '');
+  const [categoryIds, setCategoryIds] = useState<number[]>(() => {
+    const ids = initial?.categoryIds as number[] | undefined;
+    if (ids?.length) return ids;
+    if (initial?.categoryId) return [initial.categoryId];
+    return [];
+  });
   const [active, setActive] = useState(initial?.active ?? true);
   const [images, setImages] = useState<string[]>(initial?.images.map((i) => i.url) ?? []);
   const [newImageUrl, setNewImageUrl] = useState('');
@@ -70,7 +75,8 @@ export default function ConvenioForm({ categories, initial }: Props) {
       const body = {
         title, description, discountText, startDate, endDate,
         periods, physicalAddress, webUrl, instagram,
-        categoryId: categoryId ? Number(categoryId) : null,
+        categoryId: categoryIds[0] ?? null,
+        categoryIds,
         active, images,
       };
       const url = isEdit ? `/api/convenios/${initial!.id}` : '/api/convenios';
@@ -110,30 +116,50 @@ export default function ConvenioForm({ categories, initial }: Props) {
         />
       </div>
 
-      {/* Descuento + Categoría */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Texto de descuento</label>
-          <input
-            value={discountText}
-            onChange={(e) => setDiscountText(e.target.value)}
-            placeholder="Ej: 20% dcto, 2x1"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
-          />
+      {/* Descuento */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Texto de descuento</label>
+        <input
+          value={discountText}
+          onChange={(e) => setDiscountText(e.target.value)}
+          placeholder="Ej: 20% dcto, 2x1"
+          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+        />
+      </div>
+
+      {/* Categorías (hasta 3) */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Categorías <span className="text-gray-400 font-normal">(hasta 3)</span>
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {categories.map((c) => {
+            const selected = categoryIds.includes(c.id);
+            const disabled = !selected && categoryIds.length >= 3;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                disabled={disabled}
+                onClick={() => {
+                  setCategoryIds(prev =>
+                    prev.includes(c.id) ? prev.filter(id => id !== c.id) : [...prev, c.id]
+                  );
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-colors
+                  ${selected ? 'text-white border-transparent' : disabled ? 'opacity-30 cursor-not-allowed bg-gray-50 border-gray-200 text-gray-400' : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300'}`}
+                style={selected ? { backgroundColor: c.color, borderColor: c.color } : {}}
+              >
+                <span>{c.icon}</span>
+                <span>{c.name}</span>
+                {selected && <span className="ml-0.5">✓</span>}
+              </button>
+            );
+          })}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-          <select
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
-          >
-            <option value="">Sin categoría</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-            ))}
-          </select>
-        </div>
+        {categoryIds.length === 0 && (
+          <p className="text-xs text-gray-400 mt-1">Sin categoría asignada</p>
+        )}
       </div>
 
       {/* Descripción */}

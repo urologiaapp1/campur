@@ -49,6 +49,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (physicalAddress !== undefined) updates.physicalAddress = physicalAddress;
   if (webUrl !== undefined) updates.webUrl = webUrl;
   if (categoryId !== undefined) updates.categoryId = categoryId || null;
+  if (body.categoryIds !== undefined) updates.categoryIds = body.categoryIds;
   if (active !== undefined) updates.active = active;
   if (status !== undefined) updates.status = status;
 

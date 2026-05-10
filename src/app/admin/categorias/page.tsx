@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 
 interface Category {
   id: number;
@@ -10,7 +11,24 @@ interface Category {
   displayOrder: number;
 }
 
-const PRESET_ICONS = ['🍽️', '👟', '🐾', '💆', '🛍️', '🏠', '🎬', '🏥', '🚗', '✈️', '💻', '📚', '🎮', '💊', '🏋️', '🌿'];
+const PRESET_ICONS = [
+  '🍽️','🍔','🍕','🍣','☕','🍰','🥗','🍷',
+  '👟','⚽','🏋️','🚴','🎾','🏊','🥊','🎿',
+  '🐾','🐶','🐱','🐟','🌿','🦮','🐠','🐹',
+  '💆','💅','✂️','🧴','💄','🪥','🧖','🛁',
+  '🛍️','👗','👠','🎒','⌚','💍','🕶️','👒',
+  '🏠','🛋️','🪴','🔨','💡','🛏️','🪟','🚿',
+  '🎬','🎮','🎵','🎨','📚','🎭','🎪','🎡',
+  '🏥','💊','🩺','🦷','👓','🧬','💉','🩹',
+  '🚗','✈️','🚢','🏨','🗺️','🧳','🚌','🚁',
+  '💻','📱','🖨️','🎧','📷','🖥️','⌨️','🖱️',
+  '🏦','💰','📊','🏢','📋','🧾','💳','🏷️',
+  '🎓','📐','🔬','🧪','📝','🖊️','📖','🎯',
+];
+
+function isUrl(s: string) {
+  return s.startsWith('http');
+}
 
 function toSlug(s: string) {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -27,11 +45,30 @@ function CategoryModal({ cat, onSave, onClose }: {
   const [color, setColor] = useState(cat?.color ?? '#2563eb');
   const [order, setOrder] = useState(cat?.displayOrder ?? 0);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
 
   function handleNameChange(v: string) {
     setName(v);
     if (!cat?.id) setSlug(toSlug(v));
+  }
+
+  async function uploadIcon(file: File) {
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: form });
+      if (res.ok) {
+        const { url } = await res.json();
+        setIcon(url);
+      } else {
+        setError('Error al subir imagen');
+      }
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleSave() {
@@ -48,57 +85,90 @@ function CategoryModal({ cat, onSave, onClose }: {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4 overflow-y-auto py-8">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl">
         <h2 className="text-lg font-bold text-gray-900 mb-4">{cat?.id ? 'Editar categoría' : 'Nueva categoría'}</h2>
         {error && <div className="text-red-600 text-sm mb-3">{error}</div>}
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-            <input value={name} onChange={(e) => handleNameChange(e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
+            <input value={name} onChange={e => handleNameChange(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Slug (URL)</label>
-            <input value={slug} onChange={(e) => setSlug(e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 font-mono" />
+            <input value={slug} onChange={e => setSlug(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 font-mono" />
           </div>
+
+          {/* Ícono actual */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Ícono</label>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {PRESET_ICONS.map((ic) => (
+            <label className="block text-sm font-medium text-gray-700 mb-2">Ícono actual</label>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+                {isUrl(icon)
+                  ? <Image src={icon} alt="icono" width={48} height={48} className="w-full h-full object-cover" />
+                  : <span className="text-2xl">{icon}</span>
+                }
+              </div>
+              <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+                className="flex items-center gap-2 border border-dashed border-gray-300 hover:border-blue-400 text-gray-500 hover:text-blue-600 rounded-xl px-3 py-2 text-sm transition-colors disabled:opacity-50">
+                {uploading ? '⏳ Subiendo...' : '📤 Subir imagen'}
+              </button>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) uploadIcon(f); e.target.value = ''; }} />
+            </div>
+          </div>
+
+          {/* Emojis preset */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">O elegir emoji</label>
+            <div className="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto p-1 border border-gray-100 rounded-xl bg-gray-50">
+              {PRESET_ICONS.map(ic => (
                 <button key={ic} type="button" onClick={() => setIcon(ic)}
-                  className={`text-xl p-1.5 rounded-lg ${icon === ic ? 'bg-blue-100 ring-2 ring-blue-400' : 'hover:bg-gray-100'}`}>
+                  className={`text-xl p-1.5 rounded-lg transition-colors hover:bg-white ${icon === ic && !isUrl(icon) ? 'bg-white ring-2 ring-blue-400' : ''}`}>
                   {ic}
                 </button>
               ))}
             </div>
-            <input value={icon} onChange={(e) => setIcon(e.target.value)} maxLength={2} className="w-16 border border-gray-200 rounded-xl px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
               <div className="flex items-center gap-2">
-                <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border border-gray-200" />
+                <input type="color" value={color} onChange={e => setColor(e.target.value)}
+                  className="w-8 h-8 rounded cursor-pointer border border-gray-200" />
                 <span className="text-sm text-gray-500 font-mono">{color}</span>
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Orden</label>
-              <input type="number" value={order} onChange={(e) => setOrder(Number(e.target.value))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
+              <input type="number" value={order} onChange={e => setOrder(Number(e.target.value))}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
             </div>
           </div>
         </div>
+
         <div className="flex gap-3 mt-6">
           <button onClick={handleSave} disabled={saving || !name}
             className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl transition-colors text-sm">
             {saving ? 'Guardando...' : 'Guardar'}
           </button>
-          <button onClick={onClose} className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors text-sm">
+          <button onClick={onClose}
+            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors text-sm">
             Cancelar
           </button>
         </div>
       </div>
     </div>
   );
+}
+
+function CategoryIcon({ icon }: { icon: string }) {
+  if (isUrl(icon)) return <Image src={icon} alt="icono" width={28} height={28} className="w-7 h-7 rounded object-cover" />;
+  return <span className="text-xl">{icon}</span>;
 }
 
 export default function CategoriasPage() {
@@ -124,10 +194,8 @@ export default function CategoriasPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Categorías</h1>
-        <button
-          onClick={() => setModal({})}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl transition-colors text-sm"
-        >
+        <button onClick={() => setModal({})}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl transition-colors text-sm">
           ➕ Nueva categoría
         </button>
       </div>
@@ -151,11 +219,11 @@ export default function CategoriasPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {cats.map((c) => (
+              {cats.map(c => (
                 <tr key={c.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{c.icon}</span>
+                      <CategoryIcon icon={c.icon} />
                       <span className="font-medium text-gray-900">{c.name}</span>
                       <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
                     </div>
@@ -176,11 +244,7 @@ export default function CategoriasPage() {
       )}
 
       {modal !== false && (
-        <CategoryModal
-          cat={modal || null}
-          onSave={load}
-          onClose={() => setModal(false)}
-        />
+        <CategoryModal cat={modal || null} onSave={load} onClose={() => setModal(false)} />
       )}
     </div>
   );

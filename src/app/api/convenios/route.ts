@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { convenios, convenioImages, categories } from '@/lib/db/schema';
-import { desc, eq, and } from 'drizzle-orm';
+import { desc, eq, and, sql } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -17,42 +17,39 @@ export async function GET(req: NextRequest) {
 
   const conditions = [];
   if (activeOnly) conditions.push(eq(convenios.active, true));
-  if (categoryId) conditions.push(eq(convenios.categoryId, categoryId));
+  if (categoryId) {
+    conditions.push(
+      sql`(${convenios.categoryId} = ${categoryId} OR ${convenios.categoryIds} @> ${JSON.stringify([categoryId])}::jsonb)`
+    );
+  }
 
   const rows = await db
-    .select({
-      convenio: convenios,
-      category: categories,
-    })
+    .select({ convenio: convenios })
     .from(convenios)
-    .leftJoin(categories, eq(convenios.categoryId, categories.id))
     .where(conditions.length ? and(...conditions) : undefined)
     .orderBy(desc(convenios.views), desc(convenios.createdAt));
 
-  const ids = rows.map((r) => r.convenio.id);
-  const images =
-    ids.length > 0
-      ? await db
-          .select()
-          .from(convenioImages)
-          .where(eq(convenioImages.convenioId, ids[0]))
-      : [];
+  const ids = rows.map(r => r.convenio.id);
+  const [allImages, allCats] = ids.length
+    ? await Promise.all([
+        db.select().from(convenioImages),
+        db.select().from(categories),
+      ])
+    : [[], []];
 
-  // Fetch images for all convenios
-  const allImages =
-    ids.length > 0
-      ? await db.select().from(convenioImages)
-      : [];
+  const result = rows.map(r => {
+    const conv = r.convenio;
+    const catIds: number[] = (conv.categoryIds as number[])?.length
+      ? (conv.categoryIds as number[])
+      : conv.categoryId ? [conv.categoryId] : [];
+    return {
+      ...conv,
+      category: allCats.find(c => c.id === catIds[0]) ?? null,
+      categories: catIds.map(id => allCats.find(c => c.id === id)).filter(Boolean),
+      images: allImages.filter(img => img.convenioId === conv.id).sort((a, b) => a.displayOrder - b.displayOrder),
+    };
+  });
 
-  const result = rows.map((r) => ({
-    ...r.convenio,
-    category: r.category,
-    images: allImages
-      .filter((img) => img.convenioId === r.convenio.id)
-      .sort((a, b) => a.displayOrder - b.displayOrder),
-  }));
-
-  void images;
   return NextResponse.json(result);
 }
 
@@ -60,7 +57,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const {
     title, description, discountText, startDate, endDate,
-    periods, physicalAddress, webUrl, categoryId, active, images,
+    periods, physicalAddress, webUrl, instagram, categoryId, categoryIds, active, images,
   } = body;
 
   if (!title) {
@@ -76,17 +73,15 @@ export async function POST(req: NextRequest) {
     periods: periods || [],
     physicalAddress,
     webUrl,
-    categoryId: categoryId || null,
+    instagram,
+    categoryId: categoryId || (categoryIds?.[0] ?? null),
+    categoryIds: categoryIds || [],
     active: active ?? true,
   }).returning();
 
   if (images?.length) {
     await db.insert(convenioImages).values(
-      images.map((url: string, i: number) => ({
-        convenioId: conv.id,
-        url,
-        displayOrder: i,
-      }))
+      images.map((url: string, i: number) => ({ convenioId: conv.id, url, displayOrder: i }))
     );
   }
 
