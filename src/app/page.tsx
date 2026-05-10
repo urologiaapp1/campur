@@ -8,7 +8,7 @@ import SearchBar from '@/components/SearchBar';
 import Footer from '@/components/Footer';
 
 async function getData(q?: string) {
-  const [cats, topConvenios] = await Promise.all([
+  const [cats, topConvenios, allImgs] = await Promise.all([
     db.select().from(categories).orderBy(categories.displayOrder, categories.name),
     db
       .select({ convenio: convenios, category: categories })
@@ -26,20 +26,23 @@ async function getData(q?: string) {
       ))
       .orderBy(desc(convenios.views), desc(convenios.createdAt))
       .limit(24),
+    db.select().from(convenioImages).orderBy(convenioImages.displayOrder),
   ]);
-
-  const ids = topConvenios.map((r) => r.convenio.id);
-  const imgs = ids.length ? await db.select().from(convenioImages) : [];
 
   const convenioList = topConvenios.map((r) => ({
     ...r.convenio,
     category: r.category,
-    images: imgs
+    images: allImgs
       .filter((i) => i.convenioId === r.convenio.id)
       .sort((a, b) => a.displayOrder - b.displayOrder),
   }));
 
-  return { cats, convenioList };
+  // Logos: first image of each convenio that has one
+  const logos = convenioList
+    .filter(c => c.images.length > 0)
+    .map(c => ({ id: c.id, title: c.title, url: c.images[0].url }));
+
+  return { cats, convenioList, logos };
 }
 
 export const dynamic = 'force-dynamic';
@@ -50,7 +53,7 @@ export default async function HomePage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  const { cats, convenioList } = await getData(q);
+  const { cats, convenioList, logos } = await getData(q);
 
   return (
     <div className="min-h-screen">
@@ -74,25 +77,6 @@ export default async function HomePage({
 
           {/* Buscador */}
           <SearchBar initialValue={q ?? ''} />
-
-          {/* Categorías nav */}
-          {cats.length > 0 && (
-            <nav className="flex gap-2 mt-4 overflow-x-auto pb-1">
-              {cats.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/categoria/${cat.slug}`}
-                  className="flex-shrink-0 flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white text-sm font-medium px-3 py-1.5 rounded-full transition-colors"
-                >
-                  {cat.icon.startsWith('http')
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    ? <img src={cat.icon} alt="" className="w-4 h-4 rounded object-cover" />
-                    : <span>{cat.icon}</span>}
-                  <span>{cat.name}</span>
-                </Link>
-              ))}
-            </nav>
-          )}
         </div>
       </header>
 
@@ -168,6 +152,29 @@ export default async function HomePage({
           )}
         </section>
       </main>
+
+      {/* Carrusel logos empresas */}
+      {logos.length > 0 && (
+        <section className="py-8 border-t border-gray-100 bg-white/60 overflow-hidden">
+          <div className="max-w-6xl mx-auto px-4 mb-4">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-widest text-center">Empresas adheridas</h2>
+          </div>
+          <div className="relative overflow-hidden">
+            <div className="flex animate-marquee gap-6 w-max">
+              {[...logos, ...logos].map((logo, i) => (
+                <Link
+                  key={i}
+                  href={`/convenio/${logo.id}`}
+                  className="flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={logo.url} alt={logo.title} className="w-full h-full object-cover" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>
