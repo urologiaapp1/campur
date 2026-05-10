@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { convenios, categories, convenioImages } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import Carousel from '@/components/Carousel';
+import Footer from '@/components/Footer';
 
 const DAYS_ES: Record<string, string> = {
   lunes: 'Lunes',
@@ -173,6 +174,7 @@ export default async function ConvenioPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { convenios, categories, convenioImages } from '@/lib/db/schema';
 import { desc, eq, and } from 'drizzle-orm';
 import ConvenioCard from '@/components/ConvenioCard';
+import Footer from '@/components/Footer';
 
 export const revalidate = 60;
 
@@ -62,6 +63,7 @@ export default async function CategoriaPage({ params }: { params: Promise<{ slug
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 }

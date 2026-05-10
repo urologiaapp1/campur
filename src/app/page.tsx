@@ -5,6 +5,7 @@ import { convenios, categories, convenioImages } from '@/lib/db/schema';
 import { desc, eq, and, or, ilike } from 'drizzle-orm';
 import ConvenioCard from '@/components/ConvenioCard';
 import SearchBar from '@/components/SearchBar';
+import Footer from '@/components/Footer';
 
 async function getData(q?: string) {
   const [cats, topConvenios] = await Promise.all([
@@ -142,6 +143,8 @@ export default async function HomePage({
           )}
         </section>
       </main>
+
+      <Footer />
     </div>
   );
 }
