@@ -6,15 +6,11 @@ import { eq } from 'drizzle-orm';
 import Carousel from '@/components/Carousel';
 import CategoriesNav from '@/components/CategoriesNav';
 import Footer from '@/components/Footer';
+import type { Category } from '@/lib/db/schema';
 
 const DAYS_ES: Record<string, string> = {
-  lunes: 'Lunes',
-  martes: 'Martes',
-  miércoles: 'Miércoles',
-  jueves: 'Jueves',
-  viernes: 'Viernes',
-  sábado: 'Sábado',
-  domingo: 'Domingo',
+  lunes: 'Lunes', martes: 'Martes', miércoles: 'Miércoles',
+  jueves: 'Jueves', viernes: 'Viernes', sábado: 'Sábado', domingo: 'Domingo',
 };
 
 function formatDate(d: string | null) {
@@ -23,22 +19,40 @@ function formatDate(d: string | null) {
   return `${day}/${m}/${y}`;
 }
 
+function isUrl(s: string) { return s.startsWith('http'); }
+
+function CategoryBadge({ cat }: { cat: Category }) {
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full"
+      style={{ backgroundColor: cat.color + '20', color: cat.color }}
+    >
+      {isUrl(cat.icon)
+        /* eslint-disable-next-line @next/next/no-img-element */
+        ? <img src={cat.icon} alt="" className="w-3.5 h-3.5 rounded object-cover" />
+        : <span>{cat.icon}</span>}
+      {cat.name}
+    </span>
+  );
+}
+
 export default async function ConvenioPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [row] = await db
-    .select({ convenio: convenios, category: categories })
-    .from(convenios)
-    .leftJoin(categories, eq(convenios.categoryId, categories.id))
-    .where(eq(convenios.id, Number(id)));
+  const [[row], allCats, imgs] = await Promise.all([
+    db
+      .select({ convenio: convenios })
+      .from(convenios)
+      .where(eq(convenios.id, Number(id))),
+    db.select().from(categories),
+    db
+      .select()
+      .from(convenioImages)
+      .where(eq(convenioImages.convenioId, Number(id)))
+      .orderBy(convenioImages.displayOrder),
+  ]);
 
   if (!row || !row.convenio.active) notFound();
-
-  const imgs = await db
-    .select()
-    .from(convenioImages)
-    .where(eq(convenioImages.convenioId, Number(id)))
-    .orderBy(convenioImages.displayOrder);
 
   // Increment views (fire and forget)
   db.update(convenios)
@@ -46,10 +60,16 @@ export default async function ConvenioPage({ params }: { params: Promise<{ id: s
     .where(eq(convenios.id, Number(id)))
     .catch(() => {});
 
-  const { convenio, category } = row;
+  const { convenio } = row;
   const periods = (convenio.periods ?? []) as string[];
   const start = formatDate(convenio.startDate);
   const end = formatDate(convenio.endDate);
+
+  // Resolve all categories for this convenio
+  const catIds: number[] = (convenio.categoryIds as number[])?.length
+    ? (convenio.categoryIds as number[])
+    : convenio.categoryId ? [convenio.categoryId] : [];
+  const convCats = catIds.map(cid => allCats.find(c => c.id === cid)).filter(Boolean) as Category[];
 
   return (
     <div className="min-h-screen">
@@ -70,16 +90,9 @@ export default async function ConvenioPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div className="p-6">
-            {/* Category + discount badge */}
+            {/* Categories + discount badge */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              {category && (
-                <span
-                  className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: category.color + '20', color: category.color }}
-                >
-                  {category.icon} {category.name}
-                </span>
-              )}
+              {convCats.map(cat => <CategoryBadge key={cat.id} cat={cat} />)}
               {convenio.discountText && (
                 <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                   {convenio.discountText}
