@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { convenios, categories, convenioImages } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import Carousel from '@/components/Carousel';
+import CategoriesNav from '@/components/CategoriesNav';
 import Footer from '@/components/Footer';
 
 const DAYS_ES: Record<string, string> = {
@@ -54,9 +55,10 @@ export default async function ConvenioPage({ params }: { params: Promise<{ id: s
     <div className="min-h-screen">
       <header className="bg-blue-600 text-white">
         <div className="max-w-3xl mx-auto px-4 py-4">
-          <Link href="/" className="text-blue-100 text-sm hover:text-white">
+          <Link href="/" className="text-blue-100 text-sm hover:text-white mb-1 inline-block">
             ← Volver a convenios
           </Link>
+          <CategoriesNav />
         </div>
       </header>
 
