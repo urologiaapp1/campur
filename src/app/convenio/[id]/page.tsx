@@ -159,6 +159,23 @@ export default async function ConvenioPage({ params }: { params: Promise<{ id: s
                   </div>
                 </div>
               )}
+
+              {convenio.contactPhone && (
+                <div className="flex items-start gap-3">
+                  <span className="text-xl mt-0.5">📞</span>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Teléfono / WhatsApp</p>
+                    <a
+                      href={`https://wa.me/${convenio.contactPhone.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-600 hover:underline font-medium"
+                    >
+                      {convenio.contactPhone}
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
 
             {convenio.webUrl && (

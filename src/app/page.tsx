@@ -84,7 +84,10 @@ export default async function HomePage({
                   href={`/categoria/${cat.slug}`}
                   className="flex-shrink-0 flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white text-sm font-medium px-3 py-1.5 rounded-full transition-colors"
                 >
-                  <span>{cat.icon}</span>
+                  {cat.icon.startsWith('http')
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    ? <img src={cat.icon} alt="" className="w-4 h-4 rounded object-cover" />
+                    : <span>{cat.icon}</span>}
                   <span>{cat.name}</span>
                 </Link>
               ))}
@@ -104,7 +107,10 @@ export default async function HomePage({
                   href={`/categoria/${cat.slug}`}
                   className="flex flex-col items-center gap-2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100 text-center"
                 >
-                  <span className="text-3xl">{cat.icon}</span>
+                  {cat.icon.startsWith('http')
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    ? <img src={cat.icon} alt={cat.name} className="w-8 h-8 rounded-lg object-cover" />
+                    : <span className="text-3xl">{cat.icon}</span>}
                   <span className="text-sm font-semibold text-gray-700 leading-tight">{cat.name}</span>
                 </Link>
               ))}

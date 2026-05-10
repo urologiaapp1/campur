@@ -28,6 +28,7 @@ export const convenios = pgTable('convenios', {
   physicalAddress: text('physical_address'),
   webUrl: text('web_url'),
   instagram: varchar('instagram', { length: 200 }),
+  contactPhone: varchar('contact_phone', { length: 30 }),
   categoryId: integer('category_id').references(() => categories.id, { onDelete: 'set null' }),
   categoryIds: jsonb('category_ids').$type<number[]>().default([]),   // up to 3 categories
   views: integer('views').notNull().default(0),

@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const {
     title, description, discountText, startDate, endDate,
-    periods, physicalAddress, webUrl, instagram, categoryId, categoryIds, active, images,
+    periods, physicalAddress, webUrl, instagram, contactPhone, categoryId, categoryIds, active, images,
   } = body;
 
   if (!title) {
@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
     physicalAddress,
     webUrl,
     instagram,
+    contactPhone,
     categoryId: categoryId || (categoryIds?.[0] ?? null),
     categoryIds: categoryIds || [],
     active: active ?? true,

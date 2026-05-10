@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import type { Category, Convenio, ConvenioImage } from '@/lib/db/schema';
 
 const DAYS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+function isUrl(s: string) { return s.startsWith('http'); }
 
 interface Props {
   categories: Category[];
@@ -24,6 +25,7 @@ export default function ConvenioForm({ categories, initial }: Props) {
   const [physicalAddress, setPhysicalAddress] = useState(initial?.physicalAddress ?? '');
   const [webUrl, setWebUrl] = useState(initial?.webUrl ?? '');
   const [instagram, setInstagram] = useState(initial?.instagram ?? '');
+  const [contactPhone, setContactPhone] = useState(initial?.contactPhone ?? '');
   const [categoryIds, setCategoryIds] = useState<number[]>(() => {
     const ids = initial?.categoryIds as number[] | undefined;
     if (ids?.length) return ids;
@@ -74,7 +76,7 @@ export default function ConvenioForm({ categories, initial }: Props) {
     try {
       const body = {
         title, description, discountText, startDate, endDate,
-        periods, physicalAddress, webUrl, instagram,
+        periods, physicalAddress, webUrl, instagram, contactPhone,
         categoryId: categoryIds[0] ?? null,
         categoryIds,
         active, images,
@@ -104,21 +106,21 @@ export default function ConvenioForm({ categories, initial }: Props) {
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">{error}</div>
       )}
 
-      {/* Título */}
+      {/* Nombre empresa */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Empresa *</label>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          placeholder="Ej: 20% de descuento en Restaurante El Parron"
+          placeholder="Ej: Restaurante El Parrón"
           className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
         />
       </div>
 
       {/* Descuento */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Texto de descuento</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Porcentaje de descuento</label>
         <input
           value={discountText}
           onChange={(e) => setDiscountText(e.target.value)}
@@ -150,7 +152,10 @@ export default function ConvenioForm({ categories, initial }: Props) {
                   ${selected ? 'text-white border-transparent' : disabled ? 'opacity-30 cursor-not-allowed bg-gray-50 border-gray-200 text-gray-400' : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300'}`}
                 style={selected ? { backgroundColor: c.color, borderColor: c.color } : {}}
               >
-                <span>{c.icon}</span>
+                {isUrl(c.icon)
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  ? <img src={c.icon} alt="" className="w-4 h-4 rounded object-cover" />
+                  : <span>{c.icon}</span>}
                 <span>{c.name}</span>
                 {selected && <span className="ml-0.5">✓</span>}
               </button>
@@ -169,7 +174,7 @@ export default function ConvenioForm({ categories, initial }: Props) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          placeholder="Descripción detallada del convenio..."
+          placeholder="Describir descuento ofrecido..."
           className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 resize-none"
         />
       </div>
@@ -245,6 +250,18 @@ export default function ConvenioForm({ categories, initial }: Props) {
             value={instagram}
             onChange={(e) => setInstagram(e.target.value.replace('@', ''))}
             placeholder="nombre_de_usuario"
+            className="flex-1 py-2.5 pr-3 text-sm bg-transparent focus:outline-none"
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono / WhatsApp</label>
+        <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+          <span className="px-3 text-gray-400 text-sm">📞</span>
+          <input
+            value={contactPhone}
+            onChange={(e) => setContactPhone(e.target.value)}
+            placeholder="+56 9 1234 5678"
             className="flex-1 py-2.5 pr-3 text-sm bg-transparent focus:outline-none"
           />
         </div>

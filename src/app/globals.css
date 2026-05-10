@@ -6,9 +6,28 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image: url('/background.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: system-ui, -apple-system, sans-serif;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(249, 250, 251, 0.88);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
 }
 
 .line-clamp-2 {
