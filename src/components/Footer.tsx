@@ -5,8 +5,8 @@ export default function Footer() {
     <footer className="mt-12 border-t border-gray-200 bg-white">
       <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="Campur" width={36} height={36} className="rounded-full" />
-          <span className="text-sm font-semibold text-gray-700">Campur General de Padres · Temuco</span>
+          <Image src="/logo.png" alt="Beneficios Club Pumahue" width={40} height={40} className="rounded-full" />
+          <span className="text-sm font-semibold text-gray-700">Beneficios Club Pumahue · Temuco</span>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
           <a

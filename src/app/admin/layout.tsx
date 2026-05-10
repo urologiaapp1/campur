@@ -27,9 +27,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-56 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col">
         <div className="px-5 py-5 border-b border-gray-100">
           <div className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="Campur" width={36} height={36} className="rounded-full" />
+            <Image src="/logo.png" alt="Beneficios Club Pumahue" width={36} height={36} className="rounded-full" />
             <div>
-              <div className="text-base font-bold text-blue-600">Campur</div>
+              <div className="text-sm font-bold text-blue-600 leading-tight">Beneficios<br/>Club Pumahue</div>
               <div className="text-xs text-gray-400">Administración</div>
             </div>
           </div>

@@ -60,8 +60,8 @@ export default async function HomePage({
             <div className="flex items-center gap-3">
               <Image src="/logo.png" alt="Campur" width={52} height={52} className="rounded-full border-2 border-white/30" />
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">Campur</h1>
-                <p className="text-blue-100 text-sm mt-0.5">Convenios y descuentos</p>
+                <h1 className="text-xl font-bold tracking-tight leading-tight">Beneficios Club Pumahue</h1>
+                <p className="text-blue-100 text-xs mt-0.5">Campur General de Padres · Temuco</p>
               </div>
             </div>
             <Link

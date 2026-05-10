@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Convenios de Descuento",
-  description: "Encuentra los mejores convenios y descuentos disponibles",
+  title: "Beneficios Club Pumahue",
+  description: "Convenios y descuentos exclusivos para socios Campur General de Padres Temuco",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
