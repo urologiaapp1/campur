@@ -22,6 +22,7 @@ export default function ProponerPage() {
   const [webUrl, setWebUrl] = useState('');
   const [instagram, setInstagram] = useState('');
   const [contactPhone, setContactPhone] = useState('');
+  const [catalogUrl, setCatalogUrl] = useState('');
   const [proposerName, setProposerName] = useState('');
   const [proposerEmail, setProposerEmail] = useState('');
   const [proposerPhone, setProposerPhone] = useState('');
@@ -77,6 +78,7 @@ export default function ProponerPage() {
           webUrl: webUrl || null,
           instagram: instagram || null,
           contactPhone: contactPhone || null,
+          catalogUrl: catalogUrl || null,
           proposerName,
           proposerEmail,
           proposerPhone,
@@ -248,6 +250,12 @@ export default function ProponerPage() {
                   placeholder="+56 9 1234 5678"
                   className="flex-1 py-2.5 pr-3 text-sm bg-transparent focus:outline-none" />
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Link catálogo digital</label>
+              <input value={catalogUrl} onChange={e => setCatalogUrl(e.target.value)} type="url"
+                placeholder="https://..."
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" />
             </div>
 
             {/* Datos de contacto */}

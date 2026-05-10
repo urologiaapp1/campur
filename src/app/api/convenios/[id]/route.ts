@@ -34,7 +34,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const body = await req.json();
   const {
     title, description, discountText, startDate, endDate,
-    periods, physicalAddress, webUrl, instagram, contactPhone, categoryId, active, images, status,
+    periods, physicalAddress, webUrl, instagram, contactPhone, catalogUrl, categoryId, active, images, status,
   } = body;
 
   // Build partial update — only set fields that were sent
@@ -50,6 +50,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (webUrl !== undefined) updates.webUrl = webUrl;
   if (instagram !== undefined) updates.instagram = instagram;
   if (contactPhone !== undefined) updates.contactPhone = contactPhone;
+  if (catalogUrl !== undefined) updates.catalogUrl = catalogUrl;
   if (categoryId !== undefined) updates.categoryId = categoryId || null;
   if (body.categoryIds !== undefined) updates.categoryIds = body.categoryIds;
   if (active !== undefined) updates.active = active;

@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   const {
     title, discountText, description, categoryId,
     startDate, endDate, periods,
-    physicalAddress, webUrl, instagram, contactPhone,
+    physicalAddress, webUrl, instagram, contactPhone, catalogUrl,
     proposerName, proposerEmail, proposerPhone, images,
   } = body;
 
@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     webUrl: webUrl || null,
     instagram: instagram || null,
     contactPhone: contactPhone || null,
+    catalogUrl: catalogUrl || null,
     proposerName,
     proposerEmail,
     proposerPhone,

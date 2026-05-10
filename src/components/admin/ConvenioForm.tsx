@@ -26,6 +26,7 @@ export default function ConvenioForm({ categories, initial }: Props) {
   const [webUrl, setWebUrl] = useState(initial?.webUrl ?? '');
   const [instagram, setInstagram] = useState(initial?.instagram ?? '');
   const [contactPhone, setContactPhone] = useState(initial?.contactPhone ?? '');
+  const [catalogUrl, setCatalogUrl] = useState(initial?.catalogUrl ?? '');
   const [categoryIds, setCategoryIds] = useState<number[]>(() => {
     const ids = initial?.categoryIds as number[] | undefined;
     if (ids?.length) return ids;
@@ -76,7 +77,7 @@ export default function ConvenioForm({ categories, initial }: Props) {
     try {
       const body = {
         title, description, discountText, startDate, endDate,
-        periods, physicalAddress, webUrl, instagram, contactPhone,
+        periods, physicalAddress, webUrl, instagram, contactPhone, catalogUrl,
         categoryId: categoryIds[0] ?? null,
         categoryIds,
         active, images,
@@ -265,6 +266,16 @@ export default function ConvenioForm({ categories, initial }: Props) {
             className="flex-1 py-2.5 pr-3 text-sm bg-transparent focus:outline-none"
           />
         </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Link catálogo digital</label>
+        <input
+          value={catalogUrl}
+          onChange={(e) => setCatalogUrl(e.target.value)}
+          placeholder="https://..."
+          type="url"
+          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+        />
       </div>
 
       {/* Imágenes */}

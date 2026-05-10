@@ -160,6 +160,23 @@ export default async function ConvenioPage({ params }: { params: Promise<{ id: s
                 </div>
               )}
 
+              {convenio.catalogUrl && (
+                <div className="flex items-start gap-3">
+                  <span className="text-xl mt-0.5">📋</span>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Catálogo digital</p>
+                    <a
+                      href={convenio.catalogUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline break-all"
+                    >
+                      Ver catálogo
+                    </a>
+                  </div>
+                </div>
+              )}
+
               {convenio.contactPhone && (
                 <div className="flex items-start gap-3">
                   <span className="text-xl mt-0.5">📞</span>
