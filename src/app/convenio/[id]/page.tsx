@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { convenios, categories, convenioImages } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import Carousel from '@/components/Carousel';
-import CategoriesNav from '@/components/CategoriesNav';
+import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
 import type { Category } from '@/lib/db/schema';
 
@@ -73,14 +73,7 @@ export default async function ConvenioPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="min-h-screen">
-      <header className="bg-blue-600 text-white">
-        <div className="max-w-3xl mx-auto px-4 py-4">
-          <Link href="/" className="text-blue-100 text-sm hover:text-white mb-1 inline-block">
-            ← Volver a convenios
-          </Link>
-          <CategoriesNav />
-        </div>
-      </header>
+      <SiteHeader backHref="/" backLabel="Volver a convenios" />
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { db } from '@/lib/db';
 import { convenios, categories, convenioImages } from '@/lib/db/schema';
 import { desc, eq, and, or, ilike } from 'drizzle-orm';
 import ConvenioCard from '@/components/ConvenioCard';
 import SearchBar from '@/components/SearchBar';
+import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
 
 async function getData(q?: string) {
@@ -57,28 +57,13 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen">
-      <header className="bg-blue-600 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Image src="/logo.png" alt="Campur" width={52} height={52} className="rounded-full border-2 border-white/30" />
-              <div>
-                <h1 className="text-xl font-bold tracking-tight leading-tight">Beneficios Club Pumahue</h1>
-                <p className="text-blue-100 text-xs mt-0.5">Centro General de Padres Colegio Pumahue Temuco</p>
-              </div>
-            </div>
-            <Link
-              href="/proponer"
-              className="flex items-center justify-center gap-2 bg-white text-blue-600 font-bold text-sm px-4 py-2 rounded-full hover:bg-blue-50 transition-colors shadow-sm text-center"
-            >
-              ✉️ Proponer convenio
-            </Link>
-          </div>
+      <SiteHeader />
 
-          {/* Buscador */}
+      <div className="bg-blue-600">
+        <div className="max-w-6xl mx-auto px-4 pb-4">
           <SearchBar initialValue={q ?? ''} />
         </div>
-      </header>
+      </div>
 
       {/* Instagram banner */}
       <a

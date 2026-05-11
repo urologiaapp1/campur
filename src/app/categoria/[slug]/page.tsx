@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { convenios, categories, convenioImages } from '@/lib/db/schema';
 import { desc, eq, and } from 'drizzle-orm';
 import ConvenioCard from '@/components/ConvenioCard';
-import CategoriesNav from '@/components/CategoriesNav';
+import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
 
 function isUrl(s: string) { return s.startsWith('http'); }
@@ -37,24 +37,20 @@ export default async function CategoriaPage({ params }: { params: Promise<{ slug
 
   return (
     <div className="min-h-screen">
-      <header className="bg-blue-600 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <Link href="/" className="text-blue-100 text-sm hover:text-white mb-2 inline-block">
-            ← Volver
-          </Link>
-          <div className="flex items-center gap-3 mb-1">
-            {isUrl(cat.icon)
-              /* eslint-disable-next-line @next/next/no-img-element */
-              ? <img src={cat.icon} alt={cat.name} className="w-10 h-10 rounded-xl object-cover" />
-              : <span className="text-4xl">{cat.icon}</span>}
-            <div>
-              <h1 className="text-2xl font-bold">{cat.name}</h1>
-              <p className="text-blue-100 text-sm">{list.length} convenio{list.length !== 1 ? 's' : ''}</p>
-            </div>
+      <SiteHeader activeSlug={slug} />
+
+      <div className="bg-blue-700/80">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+          {isUrl(cat.icon)
+            /* eslint-disable-next-line @next/next/no-img-element */
+            ? <img src={cat.icon} alt={cat.name} className="w-8 h-8 rounded-lg object-cover" />
+            : <span className="text-2xl">{cat.icon}</span>}
+          <div>
+            <h1 className="text-white font-bold text-lg leading-tight">{cat.name}</h1>
+            <p className="text-blue-200 text-xs">{list.length} convenio{list.length !== 1 ? 's' : ''}</p>
           </div>
-          <CategoriesNav activeSlug={slug} />
         </div>
-      </header>
+      </div>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {list.length === 0 ? (
