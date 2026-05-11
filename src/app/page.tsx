@@ -119,10 +119,6 @@ export default async function HomePage({
             </div>
           )}
 
-          {!q && convenioList.length > 0 && (
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Convenios destacados</h2>
-          )}
-
           {convenioList.length === 0 ? (
             <div className="text-center py-20 text-gray-400">
               <p className="text-5xl mb-4">{q ? '🔍' : '🏷️'}</p>
