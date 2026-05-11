@@ -63,7 +63,7 @@ export default async function HomePage({
       <SiteHeader />
 
       <div className="bg-blue-600">
-        <div className="max-w-6xl mx-auto px-4 pb-4">
+        <div className="max-w-6xl mx-auto px-4 pb-6 pt-2">
           <SearchBar initialValue={q ?? ''} />
         </div>
       </div>
