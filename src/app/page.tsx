@@ -1,72 +1,42 @@
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { convenios, categories, convenioImages, settings } from '@/lib/db/schema';
-import { desc, eq, and, or, ilike } from 'drizzle-orm';
-import ConvenioCard from '@/components/ConvenioCard';
-import SearchBar from '@/components/SearchBar';
+import { eq, and, desc } from 'drizzle-orm';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
 
-async function getData(q?: string) {
-  const [cats, topConvenios, allImgs, allSettings] = await Promise.all([
+async function getData() {
+  const [cats, activeConvenios, allImgs, allSettings] = await Promise.all([
     db.select().from(categories).orderBy(categories.displayOrder, categories.name),
-    db
-      .select({ convenio: convenios, category: categories })
+    db.select({ id: convenios.id, title: convenios.title })
       .from(convenios)
-      .leftJoin(categories, eq(convenios.categoryId, categories.id))
-      .where(and(
-        eq(convenios.active, true),
-        eq(convenios.status, 'active'),
-        q ? or(
-          ilike(convenios.title, `%${q}%`),
-          ilike(convenios.description, `%${q}%`),
-          ilike(convenios.discountText, `%${q}%`),
-          ilike(convenios.physicalAddress, `%${q}%`),
-        ) : undefined,
-      ))
-      .orderBy(desc(convenios.views), desc(convenios.createdAt))
-      .limit(24),
+      .where(and(eq(convenios.active, true), eq(convenios.status, 'active')))
+      .orderBy(desc(convenios.views), desc(convenios.createdAt)),
     db.select().from(convenioImages).orderBy(convenioImages.displayOrder),
     db.select().from(settings),
   ]);
+
   const settingsMap: Record<string, string> = {};
   allSettings.forEach(s => { settingsMap[s.key] = s.value; });
 
-  const convenioList = topConvenios.map((r) => ({
-    ...r.convenio,
-    category: r.category,
-    images: allImgs
-      .filter((i) => i.convenioId === r.convenio.id)
-      .sort((a, b) => a.displayOrder - b.displayOrder),
-  }));
+  const logos = activeConvenios
+    .map(c => {
+      const img = allImgs.find(i => i.convenioId === c.id);
+      return img ? { id: c.id, title: c.title, url: img.url } : null;
+    })
+    .filter(Boolean) as { id: number; title: string; url: string }[];
 
-  // Logos: first image of each convenio that has one
-  const logos = convenioList
-    .filter(c => c.images.length > 0)
-    .map(c => ({ id: c.id, title: c.title, url: c.images[0].url }));
-
-  return { cats, convenioList, logos, settingsMap };
+  return { cats, logos, settingsMap };
 }
 
 export const dynamic = 'force-dynamic';
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
-  const { q } = await searchParams;
-  const { cats, convenioList, logos, settingsMap } = await getData(q);
+export default async function HomePage() {
+  const { cats, logos, settingsMap } = await getData();
 
   return (
     <div className="min-h-screen">
       <SiteHeader />
-
-      <div className="bg-blue-600">
-        <div className="max-w-6xl mx-auto px-4 pb-6 pt-2">
-          <SearchBar initialValue={q ?? ''} />
-        </div>
-      </div>
 
       {/* Instagram banner */}
       <a
@@ -88,7 +58,8 @@ export default async function HomePage({
       </a>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {!q && cats.length > 0 && (
+        {/* Categorías */}
+        {cats.length > 0 && (
           <section className="mb-10">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Categorías</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -108,38 +79,11 @@ export default async function HomePage({
             </div>
           </section>
         )}
-
-        <section>
-          {q && (
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">
-                {convenioList.length} resultado{convenioList.length !== 1 ? 's' : ''} para &ldquo;{q}&rdquo;
-              </h2>
-              <Link href="/" className="text-sm text-blue-600 hover:underline">Limpiar búsqueda</Link>
-            </div>
-          )}
-
-          {convenioList.length === 0 ? (
-            <div className="text-center py-20 text-gray-400">
-              <p className="text-5xl mb-4">{q ? '🔍' : '🏷️'}</p>
-              <p className="text-lg font-medium">
-                {q ? `Sin resultados para "${q}"` : 'Próximamente convenios disponibles'}
-              </p>
-              {q && <Link href="/" className="text-blue-600 text-sm mt-2 inline-block hover:underline">Ver todos</Link>}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {convenioList.map((c) => (
-                <ConvenioCard key={c.id} convenio={c} />
-              ))}
-            </div>
-          )}
-        </section>
       </main>
 
       {/* Cómo acceder a los beneficios */}
       {settingsMap['como_acceder'] && (
-        <section className="max-w-6xl mx-auto px-4 py-8">
+        <section className="max-w-6xl mx-auto px-4 pb-8">
           <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
             <div className="flex items-center gap-2 mb-4">
               <span className="text-2xl">ℹ️</span>
