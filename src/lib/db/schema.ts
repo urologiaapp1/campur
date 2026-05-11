@@ -49,7 +49,14 @@ export const convenioImages = pgTable('convenio_images', {
   displayOrder: integer('display_order').notNull().default(0),
 });
 
+export const settings = pgTable('settings', {
+  key: varchar('key', { length: 100 }).primaryKey(),
+  value: text('value').notNull().default(''),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 export type Category = typeof categories.$inferSelect;
+export type Setting = typeof settings.$inferSelect;
 export type Convenio = typeof convenios.$inferSelect;
 export type ConvenioImage = typeof convenioImages.$inferSelect;
 export type Admin = typeof admins.$inferSelect;

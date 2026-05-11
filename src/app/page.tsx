@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { db } from '@/lib/db';
-import { convenios, categories, convenioImages } from '@/lib/db/schema';
+import { convenios, categories, convenioImages, settings } from '@/lib/db/schema';
 import { desc, eq, and, or, ilike } from 'drizzle-orm';
 import ConvenioCard from '@/components/ConvenioCard';
 import SearchBar from '@/components/SearchBar';
@@ -8,7 +8,7 @@ import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
 
 async function getData(q?: string) {
-  const [cats, topConvenios, allImgs] = await Promise.all([
+  const [cats, topConvenios, allImgs, allSettings] = await Promise.all([
     db.select().from(categories).orderBy(categories.displayOrder, categories.name),
     db
       .select({ convenio: convenios, category: categories })
@@ -27,7 +27,10 @@ async function getData(q?: string) {
       .orderBy(desc(convenios.views), desc(convenios.createdAt))
       .limit(24),
     db.select().from(convenioImages).orderBy(convenioImages.displayOrder),
+    db.select().from(settings),
   ]);
+  const settingsMap: Record<string, string> = {};
+  allSettings.forEach(s => { settingsMap[s.key] = s.value; });
 
   const convenioList = topConvenios.map((r) => ({
     ...r.convenio,
@@ -42,7 +45,7 @@ async function getData(q?: string) {
     .filter(c => c.images.length > 0)
     .map(c => ({ id: c.id, title: c.title, url: c.images[0].url }));
 
-  return { cats, convenioList, logos };
+  return { cats, convenioList, logos, settingsMap };
 }
 
 export const dynamic = 'force-dynamic';
@@ -53,7 +56,7 @@ export default async function HomePage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  const { cats, convenioList, logos } = await getData(q);
+  const { cats, convenioList, logos, settingsMap } = await getData(q);
 
   return (
     <div className="min-h-screen">
@@ -137,6 +140,21 @@ export default async function HomePage({
           )}
         </section>
       </main>
+
+      {/* Cómo acceder a los beneficios */}
+      {settingsMap['como_acceder'] && (
+        <section className="max-w-6xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-2xl">ℹ️</span>
+              <h2 className="text-lg font-bold text-gray-900">¿Cómo acceder a los beneficios?</h2>
+            </div>
+            <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">
+              {settingsMap['como_acceder']}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Carrusel logos empresas */}
       {logos.length > 0 && (
